@@ -1,0 +1,19 @@
+[package]
+name = "technicolor-tarnished"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+eldenring = { path = "../fromsoftware-rs/crates/eldenring" }
+fromsoftware-shared = { path = "../fromsoftware-rs/crates/shared" }
+toml = "1.1.2"
+serde = {version = "1.0.228", features = ["derive"] }
+windows = { version = "0.62.2", features = ["Win32_Foundation", "Win32_System_LibraryLoader"]}
+notify = "8.2.0"
+tracing = "0.1.44"
+tracing-subscriber = { version = "0.3.23", features = ["env-filter", "fmt"]}
+crossbeam-channel = "0.5.15"
+rune = "0.14.1"
