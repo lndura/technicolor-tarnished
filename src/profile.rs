@@ -90,6 +90,8 @@ pub struct ScriptOverride {
 #[derive(Deserialize, Default, Debug)]
 pub struct ChrInsOverride {
     pub param_id: u32,
+    #[serde(default = "default_override_ridden")]
+    pub override_ridden: bool,
     #[serde(flatten)]
     pub phantom_param: PhantomParam,
 }
@@ -243,6 +245,10 @@ impl From<&mut PHANTOM_PARAM_ST> for PhantomParam {
         let src = value as *const PHANTOM_PARAM_ST as *const PhantomParam;
         unsafe { std::ptr::read(src) }
     }
+}
+
+fn default_override_ridden() -> bool {
+    true
 }
 
 fn default_reserve() -> [u8; 1] {
