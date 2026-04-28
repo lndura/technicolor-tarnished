@@ -122,6 +122,8 @@ glow_scale = 1.0
 # This entry is applied to the player every frame
 [player]
 param_id = 60 # Invader
+# Decides wether a ridden entity shares your override
+override_ridden = false
 edge_color_a = 0.1
 front_color_a = 0.1
 diff_mul_color_a = 0.1
