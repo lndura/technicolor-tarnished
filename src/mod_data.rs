@@ -220,6 +220,9 @@ impl ModData {
         let rune_interface = RuneInterface::compile_scripts(&profile_data.script)
             .map_err(|err| ModDataError::RuneInterfaceError(err))?;
 
+        let millis = profile_data.interval.unwrap_or(DEFAULT_INTERVAL);
+        let interval = Duration::from_millis(millis);
+        self.interval = interval;
         self.rune_interface = Some(rune_interface);
         self.profile_data = profile_data;
         self.should_patch = true;
