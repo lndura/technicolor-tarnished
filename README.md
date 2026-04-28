@@ -17,7 +17,6 @@
 
 ## Requirements
 - [Mod Engine 3](https://github.com/garyttierney/me3/)
-- Windows probably, due to how i get the profile PathBuf.
 
 ## Installing
 1. Install [Mod Engine 3](https://github.com/garyttierney/me3/releases/latest)
