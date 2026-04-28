@@ -1,6 +1,6 @@
 use std::{
     path::{Path, PathBuf},
-    str::Utf8Error,
+    string::FromUtf16Error,
     sync::{OnceLock, RwLock},
     time::{Duration, Instant},
 };
@@ -10,7 +10,7 @@ use notify::{Config, Event, PollWatcher, Watcher};
 use tracing::{error, info};
 use windows::Win32::{
     Foundation::{GetLastError, HMODULE, WIN32_ERROR},
-    System::LibraryLoader::GetModuleFileNameA,
+    System::LibraryLoader::GetModuleFileNameW,
 };
 
 use crate::{
@@ -28,7 +28,7 @@ pub enum ModDataError {
     AlreadyInitialized,
     NotInitialized,
     WinApiError(WIN32_ERROR),
-    Utf8Error(Utf8Error),
+    FromUtf16Error(FromUtf16Error),
     FileReadError(std::io::Error),
     TomlParseError(toml::de::Error),
     NotifyWatcherError(notify::Error),
@@ -43,7 +43,7 @@ impl core::fmt::Display for ModDataError {
             Self::AlreadyInitialized => write!(f, "MOD_DATA has already been initialized."),
             Self::NotInitialized => write!(f, "MOD_DATA has not been initialized."),
             Self::WinApiError(err) => write!(f, "WinAPI error occurred: {:#?}", err),
-            Self::Utf8Error(err) => write!(f, "UTF-8 error occurred: {:#?}", err),
+            Self::FromUtf16Error(err) => write!(f, "UTF-16 error occurred: {:#?}", err),
             Self::FileReadError(err) => write!(f, "File read error occurred: {:#?}", err),
             Self::TomlParseError(err) => write!(f, "Toml parse error occurred: {:#?}", err),
             Self::NotifyWatcherError(err) => {
@@ -73,15 +73,16 @@ pub fn init_mod_data(hmodule: HMODULE) -> Result<(), ModDataError> {
         return Err(ModDataError::AlreadyInitialized);
     }
 
-    let mut lpfilename = [0u8; N_SIZE];
-    let str_len = unsafe { GetModuleFileNameA(Some(hmodule), &mut lpfilename) };
+    let mut lpfilename = [0u16; N_SIZE];
+    let str_len = unsafe { GetModuleFileNameW(Some(hmodule), &mut lpfilename) };
     if str_len == 0 {
         let err = unsafe { GetLastError() };
         return Err(ModDataError::WinApiError(err));
     }
 
     let file_bytes = &mut lpfilename[..str_len as usize];
-    let file_str = str::from_utf8(file_bytes).map_err(|err| ModDataError::Utf8Error(err))?;
+    let file_str =
+        String::from_utf16(file_bytes).map_err(|err| ModDataError::FromUtf16Error(err))?;
 
     let path_buffer = PathBuf::from(file_str);
 
