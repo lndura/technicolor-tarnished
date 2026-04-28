@@ -6,7 +6,7 @@ use std::{
 };
 
 use crossbeam_channel::{Receiver, unbounded};
-use notify::{Event, PollWatcher, Watcher};
+use notify::{Config, Event, PollWatcher, Watcher};
 use tracing::{error, info};
 use windows::Win32::{
     Foundation::{GetLastError, HMODULE, WIN32_ERROR},
@@ -18,7 +18,7 @@ use crate::{
     scripting::RuneInterface,
 };
 
-const DEFAULT_INTERVAL: u64 = 250;
+const DEFAULT_INTERVAL: u64 = 2500;
 const PROFILE_PATH: &str = "phantom_color_profile.toml";
 const N_SIZE: usize = 256;
 
@@ -101,6 +101,7 @@ pub fn init_mod_data(hmodule: HMODULE) -> Result<(), ModDataError> {
         .map_err(|err| ModDataError::TomlParseError(err))?;
 
     let millis = profile_data.interval.unwrap_or(DEFAULT_INTERVAL);
+    info!("Adjusting Polling & ChrSet iteration interval to {} milliseconds", millis);
     let interval = Duration::from_millis(millis);
     let duration = Instant::now();
 
@@ -221,7 +222,12 @@ impl ModData {
             .map_err(|err| ModDataError::RuneInterfaceError(err))?;
 
         let millis = profile_data.interval.unwrap_or(DEFAULT_INTERVAL);
+        info!("Adjusting Polling & ChrSet iteration interval to {} milliseconds", millis);
         let interval = Duration::from_millis(millis);
+        let config = Config::default().with_poll_interval(interval);
+        if let Err(err) = self.watcher.configure(config) {
+            error!("Watcher config error occurred: {:#?}", err);
+        };
         self.interval = interval;
         self.rune_interface = Some(rune_interface);
         self.profile_data = profile_data;

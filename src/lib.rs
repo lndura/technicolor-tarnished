@@ -89,7 +89,6 @@ unsafe extern "C" fn DllMain(hmodule: HMODULE, reason: u32) -> bool {
 
                     if mod_data.duration.elapsed() >= mod_data.interval {
                         if let Ok(w_char_man) = unsafe { WorldChrMan::instance() } {
-
                             if let Some(summon_override) = &mod_data.profile_data.summon {
                                 for chrins in w_char_man.summon_buddy_chr_set.characters() {
                                     chrins.phantom_param_override = summon_override.param_id as i32;
