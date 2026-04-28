@@ -117,6 +117,14 @@ unsafe extern "C" fn DllMain(hmodule: HMODULE, reason: u32) -> bool {
                         if let Some(player_override) = &mod_data.profile_data.player {
                             main_player.chr_ins.phantom_param_override =
                                 player_override.param_id as i32;
+
+                            let ride_module = main_player.chr_ins.modules.ride.as_mut();
+
+                            if let Some(mut last_mounted_ptr) = ride_module.last_mounted {
+                                let last_mounted = unsafe { last_mounted_ptr.as_mut() };
+                                last_mounted.phantom_param_override =
+                                    player_override.param_id as i32;
+                            }
                         }
 
                         mod_data.duration = Instant::now();

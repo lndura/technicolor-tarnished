@@ -101,7 +101,10 @@ pub fn init_mod_data(hmodule: HMODULE) -> Result<(), ModDataError> {
         .map_err(|err| ModDataError::TomlParseError(err))?;
 
     let millis = profile_data.interval.unwrap_or(DEFAULT_INTERVAL);
-    info!("Adjusting Polling & ChrSet iteration interval to {} milliseconds", millis);
+    info!(
+        "Adjusting Polling & ChrSet iteration interval to {} milliseconds",
+        millis
+    );
     let interval = Duration::from_millis(millis);
     let duration = Instant::now();
 
@@ -222,7 +225,10 @@ impl ModData {
             .map_err(|err| ModDataError::RuneInterfaceError(err))?;
 
         let millis = profile_data.interval.unwrap_or(DEFAULT_INTERVAL);
-        info!("Adjusting Polling & ChrSet iteration interval to {} milliseconds", millis);
+        info!(
+            "Adjusting Polling & ChrSet iteration interval to {} milliseconds",
+            millis
+        );
         let interval = Duration::from_millis(millis);
         let config = Config::default().with_poll_interval(interval);
         if let Err(err) = self.watcher.configure(config) {

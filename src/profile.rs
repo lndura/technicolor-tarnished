@@ -110,9 +110,7 @@ pub struct ParamOverride {
 }
 
 #[derive(Deserialize, Default, Debug, Any)]
-#[rune(item = ::phantom_param)]
 #[repr(C)]
-#[allow(dead_code)]
 pub struct PhantomParam {
     #[rune(get, set)]
     pub edge_color_a: f32,
