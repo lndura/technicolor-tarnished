@@ -1,0 +1,31 @@
+pub fn main(param) {
+    let min = 0;
+    let max = 255;
+    let step = 1;
+
+    if param.edge_color_r == max && param.edge_color_b == min && param.edge_color_g < max {
+        param.edge_color_g = param.edge_color_g + step;
+    }
+
+    if param.edge_color_g == max && param.edge_color_b == min && param.edge_color_r > min {
+        param.edge_color_r = param.edge_color_r - step;
+    }
+
+    if param.edge_color_g == max && param.edge_color_r == min && param.edge_color_b < max {
+        param.edge_color_b = param.edge_color_b + step;
+    }
+
+    if param.edge_color_b == max && param.edge_color_r == min && param.edge_color_g > min {
+        param.edge_color_g = param.edge_color_g - step;
+    }
+
+    if param.edge_color_b == max && param.edge_color_g == min && param.edge_color_r < max {
+        param.edge_color_r = param.edge_color_r + step;
+    }
+
+    if param.edge_color_r == max && param.edge_color_g == min && param.edge_color_b > min {
+        param.edge_color_b = param.edge_color_b - step;
+    }
+
+    param
+}

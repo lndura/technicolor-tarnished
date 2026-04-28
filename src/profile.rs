@@ -46,10 +46,12 @@ impl Profile {
 
         self.chr_id.iter().for_each(|chr_id_override| {
             let param = &chr_id_override.phantom_param;
-            let param_id = &chr_id_override.param_id;
-            match solo_param.get_mut::<eldenring::cs::PhantomParam>(*param_id) {
-                Some(row) => param.patch(row),
-                None => tracing_error(CHR_ID_STR, param_id),
+            let param_id = chr_id_override.param_id;
+            if param_id != 0 && param_id != u32::MAX {
+                match solo_param.get_mut::<eldenring::cs::PhantomParam>(param_id) {
+                    Some(row) => param.patch(row),
+                    None => tracing_error(CHR_ID_STR, &param_id),
+                }
             }
         });
 

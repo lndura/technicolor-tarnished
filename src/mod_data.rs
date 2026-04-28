@@ -45,7 +45,7 @@ impl core::fmt::Display for ModDataError {
             Self::WinApiError(err) => write!(f, "WinAPI error occurred: {:#?}", err),
             Self::FromUtf16Error(err) => write!(f, "UTF-16 error occurred: {:#?}", err),
             Self::FileReadError(err) => write!(f, "File read error occurred: {:#?}", err),
-            Self::TomlParseError(err) => write!(f, "Toml parse error occurred: {:#?}", err),
+            Self::TomlParseError(err) => write!(f, "Toml parse error occurred: {:#?}", err.message()),
             Self::NotifyWatcherError(err) => {
                 write!(f, "Failed to watch profile path for changes: {:#?}", err)
             }

@@ -91,9 +91,13 @@ unsafe extern "C" fn DllMain(hmodule: HMODULE, reason: u32) -> bool {
                     if mod_data.duration.elapsed() >= mod_data.interval {
                         let profile_data = &mod_data.profile_data;
                         if let Ok(w_char_man) = unsafe { WorldChrMan::instance() } {
-                            if let Some(summon_override) = &profile_data.summon {
-                                for chrins in w_char_man.summon_buddy_chr_set.characters() {
-                                    chrins.phantom_param_override = summon_override.param_id as i32;
+                            if let Some(override_data) = &profile_data.summon {
+                                for chr_ins in w_char_man.summon_buddy_chr_set.characters() {
+                                    let param_id = override_data.param_id as i32;
+                                    match param_id {
+                                        -1 | 0 => chr_ins.phantom_param_override = -1,
+                                        _ => chr_ins.phantom_param_override = param_id,
+                                    }
                                 }
                             }
 
@@ -110,27 +114,34 @@ unsafe extern "C" fn DllMain(hmodule: HMODULE, reason: u32) -> bool {
                                                     .any(|id| *id == chr_ins.character_id)
                                             })
                                         {
-                                            chr_ins.phantom_param_override =
-                                                override_data.param_id as i32;
+                                            let param_id = override_data.param_id as i32;
+                                            match param_id {
+                                                -1 | 0 => chr_ins.phantom_param_override = -1,
+                                                _ => chr_ins.phantom_param_override = param_id,
+                                            }
                                         }
                                     }
                                 }
                             }
 
-                            if let Some(player_override) = &profile_data.player
+                            if let Some(override_data) = &profile_data.player
                                 && let Some(main_player) = w_char_man.main_player.as_mut()
                             {
-                                main_player.chr_ins.phantom_param_override =
-                                    player_override.param_id as i32;
-
+                                let param_id = override_data.param_id as i32;
+                                match param_id {
+                                    -1 | 0 => main_player.phantom_param_override = -1,
+                                    _ => main_player.phantom_param_override = param_id,
+                                }
                                 let ride_module = main_player.chr_ins.modules.ride.as_mut();
 
-                                if player_override.override_ridden
+                                if override_data.override_ridden
                                     && let Some(mut last_mounted_ptr) = ride_module.last_mounted
                                 {
                                     let last_mounted = unsafe { last_mounted_ptr.as_mut() };
-                                    last_mounted.phantom_param_override =
-                                        player_override.param_id as i32;
+                                    match param_id {
+                                        -1 | 0 => last_mounted.phantom_param_override = -1,
+                                        _ => last_mounted.phantom_param_override = param_id,
+                                    }
                                 }
                             }
                         }
