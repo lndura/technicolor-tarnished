@@ -3,7 +3,7 @@ use tracing::{error, info};
 use windows::Win32::Foundation::HMODULE;
 
 use eldenring::{
-    cs::{CSTaskGroupIndex, CSTaskImp, SoloParamRepository, WorldChrMan},
+    cs::{CSTaskGroupIndex, CSTaskImp, ChrType, SoloParamRepository, WorldChrMan},
     fd4::FD4TaskData,
     util::system::wait_for_system_init,
 };
@@ -127,21 +127,28 @@ unsafe extern "C" fn DllMain(hmodule: HMODULE, reason: u32) -> bool {
                             if let Some(override_data) = &profile_data.player
                                 && let Some(main_player) = w_char_man.main_player.as_mut()
                             {
-                                let param_id = override_data.param_id as i32;
-                                match param_id {
-                                    -1 | 0 => main_player.phantom_param_override = -1,
-                                    _ => main_player.phantom_param_override = param_id,
-                                }
-                                let ride_module = main_player.chr_ins.modules.ride.as_mut();
+                                let chr_type = unsafe { main_player.player_game_data.as_ref().chr_type };
+                                let is_host = chr_type == ChrType::Local || chr_type == ChrType::None;
 
-                                if override_data.override_ridden
-                                    && let Some(mut last_mounted_ptr) = ride_module.last_mounted
-                                {
-                                    let last_mounted = unsafe { last_mounted_ptr.as_mut() };
+                                if !(is_host && override_data.ignore_as_host) {
+                                    let param_id = override_data.param_id as i32;
                                     match param_id {
-                                        -1 | 0 => last_mounted.phantom_param_override = -1,
-                                        _ => last_mounted.phantom_param_override = param_id,
+                                        -1 | 0 => main_player.phantom_param_override = 0,
+                                        _ => main_player.phantom_param_override = param_id,
                                     }
+
+                                    let ride_module = main_player.chr_ins.modules.ride.as_mut();
+                                    if override_data.override_ridden
+                                        && let Some(mut last_mounted_ptr) = ride_module.last_mounted
+                                    {
+                                        let last_mounted = unsafe { last_mounted_ptr.as_mut() };
+                                        match param_id {
+                                            -1 | 0 => last_mounted.phantom_param_override = -1,
+                                            _ => last_mounted.phantom_param_override = param_id,
+                                        }
+                                    }
+                                } else {
+                                    main_player.phantom_param_override = -1
                                 }
                             }
                         }

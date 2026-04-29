@@ -42,7 +42,7 @@ impl Profile {
             })
         });
 
-        info!("Patched params for '{}' param entries", self.chr_id.len());
+        info!("Patched params for '{}' {} entries", self.param.len(), PARAM_STR);
 
         self.chr_id.iter().for_each(|chr_id_override| {
             let param = &chr_id_override.phantom_param;
@@ -55,26 +55,34 @@ impl Profile {
             }
         });
 
-        info!("Patched params for '{}' chr_id entries", self.chr_id.len());
+        info!("Patched params for '{}' {} entries", self.chr_id.len(), CHR_ID_STR);
 
         if let Some(player_override) = &self.player {
             let param = &player_override.phantom_param;
-            let param_id = &player_override.param_id;
-            match solo_param.get_mut::<eldenring::cs::PhantomParam>(*param_id) {
-                Some(row) => param.patch(row),
-                None => tracing_error(PLAYER_STR, param_id),
+            let param_id = player_override.param_id;
+            if param_id != 0 && param_id != u32::MAX {
+                match solo_param.get_mut::<eldenring::cs::PhantomParam>(param_id) {
+                    Some(row) => param.patch(row),
+                    None => tracing_error(CHR_ID_STR, &param_id),
+                }
+                info!("Patched params for the {} entry", PLAYER_STR);
+            } else {
+                info!("No phantom colour param will be applied to the {}", PLAYER_STR);
             }
-            info!("Patched params for the player entry");
         }
 
         if let Some(summon_override) = &self.summon {
             let param = &summon_override.phantom_param;
-            let param_id = &summon_override.param_id;
-            match solo_param.get_mut::<eldenring::cs::PhantomParam>(*param_id) {
-                Some(row) => param.patch(row),
-                None => tracing_error(SUMMON_STR, param_id),
+            let param_id = summon_override.param_id;
+            if param_id != 0 && param_id != u32::MAX {
+                match solo_param.get_mut::<eldenring::cs::PhantomParam>(param_id) {
+                    Some(row) => param.patch(row),
+                    None => tracing_error(CHR_ID_STR, &param_id),
+                }
+                info!("Patched params for the {} entry", SUMMON_STR);
+            } else {
+                info!("No phantom colour param will be applied to the {}", SUMMON_STR);
             }
-            info!("Patched params for the summon entry");
         }
 
         info!("Succesfully applied profile patches");
@@ -94,6 +102,8 @@ pub struct ChrInsOverride {
     pub param_id: u32,
     #[serde(default = "default_override_ridden")]
     pub override_ridden: bool,
+    #[serde(default = "default_ignore_as_host")]
+    pub ignore_as_host: bool,
     #[serde(flatten)]
     pub phantom_param: PhantomParam,
 }
@@ -251,6 +261,10 @@ impl From<&mut PHANTOM_PARAM_ST> for PhantomParam {
 
 fn default_override_ridden() -> bool {
     true
+}
+
+fn default_ignore_as_host() -> bool {
+    false
 }
 
 fn default_reserve() -> [u8; 1] {

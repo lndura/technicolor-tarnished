@@ -1,0 +1,41 @@
+interval = 5000
+
+# This entry is applied to the player every frame
+[player]
+param_id = 810
+override_ridden = true
+ignore_as_host = true
+edge_color_a = 0.5
+front_color_a = 0.0
+diff_mul_color_a = 1
+spec_mul_color_a = 1.2
+light_color_a = 0.2
+
+edge_color_r = 100
+edge_color_g = 60
+edge_color_b = 210
+
+front_color_r = 0
+front_color_g = 0
+front_color_b = 0
+
+diff_mul_color_r = 255
+diff_mul_color_g = 255
+diff_mul_color_b = 255
+
+spec_mul_color_r = 255
+spec_mul_color_g = 255
+spec_mul_color_b = 255
+
+light_color_r = 90
+light_color_g = 144
+light_color_b = 224
+
+alpha = 0.98
+blend_rate = 1.0
+blend_type = 0
+is_edge_subtract = 0
+is_front_subtract = 1
+is_no2_pass = 0
+edge_power = 0.5
+glow_scale = 0.034
