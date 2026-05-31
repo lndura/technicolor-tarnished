@@ -46,7 +46,7 @@ unsafe extern "C" fn DllMain(hmodule: HMODULE, reason: u32) -> bool {
             else {
                 return;
             };
-
+            
             cs_task.run_recurring(
                 |_task: &FD4TaskData| {
                     let Ok(mut mod_data) = get_mod_data()
@@ -73,7 +73,7 @@ unsafe extern "C" fn DllMain(hmodule: HMODULE, reason: u32) -> bool {
                         }
                     }
 
-                    if unsafe { WorldChrMan::instance() }
+                    if unsafe { WorldChrMan::instance_mut() }
                         .ok()
                         .and_then(|w| w.main_player.as_mut())
                         .is_none()
@@ -90,7 +90,7 @@ unsafe extern "C" fn DllMain(hmodule: HMODULE, reason: u32) -> bool {
 
                     if mod_data.duration.elapsed() >= mod_data.interval {
                         let profile_data = &mod_data.profile_data;
-                        if let Ok(w_char_man) = unsafe { WorldChrMan::instance() } {
+                        if let Ok(w_char_man) = unsafe { WorldChrMan::instance_mut() } {
                             if let Some(override_data) = &profile_data.summon {
                                 for chr_ins in w_char_man.summon_buddy_chr_set.characters() {
                                     let param_id = override_data.param_id as i32;
@@ -157,7 +157,7 @@ unsafe extern "C" fn DllMain(hmodule: HMODULE, reason: u32) -> bool {
                     }
 
                     if let Some(interface) = &mod_data.rune_interface
-                        && let Ok(solo_param) = unsafe { SoloParamRepository::instance() }
+                        && let Ok(solo_param) = unsafe { SoloParamRepository::instance_mut() }
                         && let Err(err) =
                             interface.run_scripts(solo_param, &mod_data.profile_data.script)
                     {

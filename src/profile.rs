@@ -30,7 +30,7 @@ fn tracing_error(t: &str, p: &u32) {
 
 impl Profile {
     pub fn patch(&self) -> Result<(), InstanceError> {
-        let solo_param = unsafe { SoloParamRepository::instance() }?;
+        let solo_param = unsafe { SoloParamRepository::instance_mut() }?;
 
         self.param.iter().for_each(|param_override| {
             param_override.param_id_list.iter().for_each(|param_id| {

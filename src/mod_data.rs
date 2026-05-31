@@ -19,7 +19,6 @@ use crate::{
 };
 
 const DEFAULT_INTERVAL: u64 = 2500;
-const PROFILE_PATH: &str = "phantom_color_profile.toml";
 const N_SIZE: usize = 256;
 
 #[derive(Debug)]
@@ -33,6 +32,7 @@ pub enum ModDataError {
     TomlParseError(toml::de::Error),
     NotifyWatcherError(notify::Error),
     NoParentDirectory,
+    SetExtensionError,
     RuneInterfaceError(crate::scripting::RuneInterfaceError),
 }
 
@@ -50,6 +50,7 @@ impl core::fmt::Display for ModDataError {
                 write!(f, "Failed to watch profile path for changes: {:#?}", err)
             }
             Self::NoParentDirectory => write!(f, "No parent directory found for the module path."),
+            Self::SetExtensionError => write!(f, "Failed to set the profile file extension to '.toml'."),
             Self::RuneInterfaceError(err) => write!(f, "{}", err),
         }
     }
@@ -60,6 +61,7 @@ pub static MOD_DATA: OnceLock<RwLock<ModData>> = OnceLock::new();
 pub struct ModData {
     pub profile_data: Profile,
     pub directory_path: PathBuf,
+    pub profile_path: PathBuf,
     pub should_patch: bool,
     pub watcher: PollWatcher,
     pub receiver: Receiver<notify::Result<Event>>,
@@ -84,18 +86,22 @@ pub fn init_mod_data(hmodule: HMODULE) -> Result<(), ModDataError> {
     let file_str =
         String::from_utf16(file_bytes).map_err(|err| ModDataError::FromUtf16Error(err))?;
 
-    let path_buffer = PathBuf::from(file_str);
+    let mut path_buffer = PathBuf::from(file_str);
 
     let directory = path_buffer
         .parent()
         .ok_or(ModDataError::NoParentDirectory)?
         .to_path_buf();
 
-    let profile_path = directory.join(PROFILE_PATH);
 
-    info!("Attempting to load config from {:#?}", profile_path);
 
-    let profile_file = std::fs::read_to_string(profile_path.clone())
+    if !path_buffer.set_extension("toml") {
+        return Err(ModDataError::SetExtensionError);
+    }
+
+    info!("Attempting to load config from {:#?}", &path_buffer);
+
+    let profile_file = std::fs::read_to_string(&path_buffer)
         .map_err(|err| ModDataError::FileReadError(err))?;
 
     let mut profile_data = toml::from_str::<Profile>(&profile_file)
@@ -119,7 +125,7 @@ pub fn init_mod_data(hmodule: HMODULE) -> Result<(), ModDataError> {
     )
     .map_err(|err| ModDataError::NotifyWatcherError(err))?;
 
-    let path = profile_path.as_path();
+    let path = path_buffer.as_path();
     watcher
         .watch(path, notify::RecursiveMode::NonRecursive)
         .map_err(|err| ModDataError::NotifyWatcherError(err))?;
@@ -152,6 +158,7 @@ pub fn init_mod_data(hmodule: HMODULE) -> Result<(), ModDataError> {
         .set(RwLock::new(ModData {
             profile_data: profile_data,
             directory_path: directory,
+            profile_path: path_buffer,
             should_patch: true,
             watcher: watcher,
             receiver: receiver,
@@ -210,7 +217,8 @@ impl ModData {
         })
     }
     pub fn update_profile(&mut self) -> Result<(), ModDataError> {
-        let profile_path = self.directory_path.join(PROFILE_PATH);
+        let profile_path = self.directory_path.join(&self.profile_path);
+
         let profile_file = std::fs::read_to_string(profile_path)
             .map_err(|err| ModDataError::FileReadError(err))?;
 
